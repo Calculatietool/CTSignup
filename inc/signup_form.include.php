@@ -19,7 +19,7 @@
 			<input name="ctsignup_user_company" id="ctsignup_user_company" class="required" type="text" value="<?php isset($_POST["ctsignup_user_company"]) ? _e($_POST["ctsignup_user_company"]) : null ?>" data-validation="required"/>
 		</p>
 		<p>
-			<label for="ctsignup_user_account"><?php _e('Username (verplicht)'); ?></label>
+			<label for="ctsignup_user_account"><?php _e('Gebruikersnaam (verplicht)'); ?></label>
 			<input name="ctsignup_user_account" id="ctsignup_user_account" class="required" type="text" value="<?php isset($_POST["ctsignup_user_account"]) ? _e($_POST["ctsignup_user_account"]) : null ?>" data-sanitize="trim lower" data-validation="server" data-validation-url="<?php _e(add_query_arg( 'usercheck', true )); ?>"/>
 		</p>
 		<p>
