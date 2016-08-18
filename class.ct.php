@@ -1,7 +1,7 @@
 <?php
 
 class CalculatieTool {
-	const API_ENDPOINT = 'https://app.calculatietool.com';
+	const API_ENDPOINT = 'http://localhost';
 
 	private static $initiated = false;
 
@@ -215,11 +215,11 @@ class CalculatieTool {
 			<div class="ctsignup_signup">
 				<form id="ctsignup_registration_form" class="ctsignup_form" action="" method="post">
 					<p>
-						<label for="ctsignup_user_first"><?php _e('Voornaam'); ?> *</label>
+						<label for="ctsignup_user_first"><?php _e('Voornaam (verplicht)'); ?></label>
 						<input name="ctsignup_user_first" id="ctsignup_user_first" type="text" value="<?php isset($_POST["ctsignup_user_first"]) ? _e($_POST["ctsignup_user_first"]) : null ?>" data-validation="required"/>
 					</p>
 					<p>
-						<label for="ctsignup_user_last"><?php _e('Achternaam'); ?> *</label>
+						<label for="ctsignup_user_last"><?php _e('Achternaam (verplicht)'); ?></label>
 						<input name="ctsignup_user_last" id="ctsignup_user_last" type="text" value="<?php isset($_POST["ctsignup_user_last"]) ? _e($_POST["ctsignup_user_last"]) : null ?>" data-validation="required"/>
 					</p>
 					<p>
@@ -227,29 +227,29 @@ class CalculatieTool {
 						<input name="ctsignup_user_phone" id="ctsignup_user_phone" type="text" value="<?php isset($_POST["ctsignup_user_phone"]) ? _e($_POST["ctsignup_user_phone"]) : null ?>"/>
 					</p>
 					<p>
-						<label for="ctsignup_user_company"><?php _e('Bedrijfsnaam'); ?> *</label>
+						<label for="ctsignup_user_company"><?php _e('Bedrijfsnaam (verplicht)'); ?></label>
 						<input name="ctsignup_user_company" id="ctsignup_user_company" class="required" type="text" value="<?php isset($_POST["ctsignup_user_company"]) ? _e($_POST["ctsignup_user_company"]) : null ?>" data-validation="required"/>
 					</p>
 					<p>
-						<label for="ctsignup_user_account"><?php _e('Username'); ?> *</label>
+						<label for="ctsignup_user_account"><?php _e('Username (verplicht)'); ?></label>
 						<input name="ctsignup_user_account" id="ctsignup_user_account" class="required" type="text" value="<?php isset($_POST["ctsignup_user_account"]) ? _e($_POST["ctsignup_user_account"]) : null ?>" data-validation="alphanumeric" data-validation-allowing="-_" data-sanitize="trim lower"/>
 					</p>
 					<p>
-						<label for="ctsignup_user_email"><?php _e('Email'); ?> *</label>
+						<label for="ctsignup_user_email"><?php _e('Email (verplicht)'); ?></label>
 						<input name="ctsignup_user_email" id="ctsignup_user_email" class="required" type="email" value="<?php isset($_POST["ctsignup_user_email"]) ? _e($_POST["ctsignup_user_email"]) : null ?>" required data-validation="email"/>
 					</p>
 					<p>
-						<label for="password"><?php _e('Wachtwoord'); ?> *</label>
+						<label for="password"><?php _e('Wachtwoord (verplicht)'); ?></label>
 						<input name="ctsignup_user_pass" id="password" class="required" type="password" data-validation="length" data-validation-length="min5"/>
 					</p>
 					<p>
-						<label for="password_again"><?php _e('Herhaal wachtwoord'); ?> *</label>
+						<label for="password_again"><?php _e('Herhaal wachtwoord (verplicht)'); ?></label>
 						<input name="ctsignup_user_pass_confirm" id="password_again" class="required" type="password" data-validation="confirmation" data-validation-confirm="ctsignup_user_pass"/>
 					</p>
-					<!--<p>
+					<p>
 						<label for="ctsignup_agreement"><?php _e('Ga akkoord met de algemene voorwaarde'); ?> *</label>
 						<input name="ctsignup_agreement" type="checkbox" data-validation="required">
-					</p>-->
+					</p>
 					<p>
 						<input type="hidden" name="signup_redirect" value="<?php _e( $redirect ) ?>"/>
 						<input type="submit" name="signup_form_save" value="<?php _e('Registreer account'); ?>"/>
@@ -344,6 +344,18 @@ class CalculatieTool {
 
 			$response = self::http_post( $body , self::get_token_url() );
 
+			if ( !$response ) {
+				CalculatieTool::log( 'Service returned empty response' );
+				
+				return false;
+			}
+
+			if ( property_exists( $response, 'error' ) ) {
+				CalculatieTool::log( compact( 'response' ) );
+
+				return false;
+			}
+
 			set_transient( 'ctsignup_access_token', $response->access_token, $response->expires_in );
 
 			$access_token = $response->access_token;
@@ -358,9 +370,15 @@ class CalculatieTool {
 	 * @return bool True on success, false on failure.
 	 */
 	public static function api_external_verification() {
-		$response = self::http_get( self::build_api_url( '/oauth2/rest/internal/verify' ), self::get_access_token() );
+		$access_token = self::get_access_token();
+		if ( ! $access_token ) {
+			return false;
+		}
 
-		if ( !$response ) {
+		$response = self::http_get( self::build_api_url( '/oauth2/rest/internal/verify' ), $access_token );
+		if ( ! $response ) {
+			CalculatieTool::log( 'Service returned empty response' );
+			
 			return false;
 		}
 
@@ -378,10 +396,20 @@ class CalculatieTool {
 	 * @return bool True on success, false on failure.
 	 */
 	public static function api_external_signup( $data ) {
-		$response = self::http_post( $data, self::build_api_url( '/oauth2/rest/internal/user_signup' ), self::get_access_token() );
+		$access_token = self::get_access_token();
+		if ( ! $access_token ) {
+			return false;
+		}
 
-		if ( !$response ) {
-			return false; //fow now
+		$response = self::http_post( $data, self::build_api_url( '/oauth2/rest/internal/user_signup' ), $access_token );
+		if ( ! $response ) {
+			CalculatieTool::log( 'Service returned empty response' );
+			
+			return false;
+		}
+
+		if ( property_exists( $response, 'error' ) ) {
+			print_r($response); exit;
 		}
 
 		if ( 0 === $response->success ) {
@@ -405,9 +433,7 @@ class CalculatieTool {
 	 * @param mixed $message The data to log.
 	 */
 	public static function log( $message ) {
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-			error_log( print_r( compact( 'message' ), true ) );
-		}
+		error_log(  'CTSignup: an error occured: ' . print_r( compact( 'message' ), true ) );
 	}
 
 	/**

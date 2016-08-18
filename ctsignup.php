@@ -3,7 +3,7 @@
 Plugin Name: CTSignup
 Plugin URI: https://www.calculatietool.com
 Description: Calculatietool Signup client for CalculatieToo.com
-Version: 1.1
+Version: 1.2
 Author: CalculatieTool.com
 Author URI: https://www.calculatietool.com
 License: BSD
@@ -14,7 +14,7 @@ if ( !function_exists( 'add_action' ) ) {
 	exit;
 }
 
-define( 'CTSINGUP_VERSION', '1.1' );
+define( 'CTSINGUP_VERSION', '1.2' );
 define( 'CTSINGUP__MINIMUM_WP_VERSION', '3.2' );
 define( 'CTSINGUP__PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
