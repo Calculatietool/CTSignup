@@ -20,7 +20,8 @@ class CalculatieTool {
 	private static function init_hooks() {
 		self::$initiated = true;
 
-		add_shortcode('ctsignup-form', array( 'CalculatieTool', 'signup_form' ) );
+		add_shortcode('ctsignup-form-signup', array( 'CalculatieTool', 'signup_form_register' ) );
+		add_shortcode('ctsignup-form-mail', array( 'CalculatieTool', 'signup_form_mail' ) );
 
 		wp_enqueue_script( 'script', plugins_url( '/js/jquery.form-validator.min.js', __FILE__ ), array ( 'jquery' ) );
 
@@ -145,6 +146,11 @@ class CalculatieTool {
 				lang: 'nl',
 				modules: [ 'security', 'sanitize' ]
 			});
+			jQuery.validate({
+				form : '#ctsignup_email_form',
+				lang: 'nl',
+				modules: [ 'sanitize' ]
+			});
 		});
 		</script>
 		<?php
@@ -203,7 +209,7 @@ class CalculatieTool {
 	 * @param string|array $attrs Supplied shortcode attributes.
 	 * @return string The HTML page.
 	 */
-	public static function signup_form( $attrs ) {
+	public static function signup_form_register( $attrs ) {
 		$redirect = "/";
 		if ( isset( $attrs['success'] ) ) {
 			$redirect = $attrs['success'];
@@ -261,6 +267,53 @@ class CalculatieTool {
 	}
 
 	/**
+	 * Return the HTML view.
+	 *
+	 * @param string|array $attrs Supplied shortcode attributes.
+	 * @return string The HTML page.
+	 */
+	public static function signup_form_mail( $attrs ) {
+		$redirect = "/";
+		if ( isset( $attrs['success'] ) ) {
+			$redirect = $attrs['success'];
+		}
+
+		ob_start(); ?>	
+			<?php CalculatieTool::signup_form_error_messages(); ?>
+	 
+			<div class="ctsignup_mail">
+				<form id="ctsignup_email_form" class="mail_form" action="" method="post">
+					<p>
+						<label for="ctsignup_user_first"><?php _e('Voornaam (verplicht)'); ?></label>
+						<input name="ctsignup_user_first" id="ctsignup_user_first" type="text" value="<?php isset($_POST["ctsignup_user_first"]) ? _e($_POST["ctsignup_user_first"]) : null ?>" data-validation="required"/>
+					</p>
+					<p>
+						<label for="ctsignup_user_last"><?php _e('Achternaam (verplicht)'); ?></label>
+						<input name="ctsignup_user_last" id="ctsignup_user_last" type="text" value="<?php isset($_POST["ctsignup_user_last"]) ? _e($_POST["ctsignup_user_last"]) : null ?>" data-validation="required"/>
+					</p>
+					<p>
+						<label for="ctsignup_user_email"><?php _e('Email (verplicht)'); ?></label>
+						<input name="ctsignup_user_email" id="ctsignup_user_email" class="required" type="email" value="<?php isset($_POST["ctsignup_user_email"]) ? _e($_POST["ctsignup_user_email"]) : null ?>" required data-validation="email"/>
+					</p>
+					<p>
+						<label for="ctsignup_user_phone"><?php _e('Telefoonnummer (verplicht)'); ?></label>
+						<input name="ctsignup_user_phone" id="ctsignup_user_phone" type="text" value="<?php isset($_POST["ctsignup_user_phone"]) ? _e($_POST["ctsignup_user_phone"]) : null ?>" data-validation="required"/>
+					</p>
+					<p>
+						<label for="ctsignup_user_comment"><?php _e('Opmerking'); ?></label>
+						<textarea name="ctsignup_user_comment" id="ctsignup_user_comment"><?php isset($_POST["ctsignup_user_comment"]) ? _e($_POST["ctsignup_user_comment"]) : null ?></textarea>
+					</p>
+					<p>
+						<input type="hidden" name="mail_redirect" value="<?php _e( $redirect ) ?>"/>
+						<input type="submit" name="mail_form_save" value="<?php _e('Versturen'); ?>"/>
+					</p>
+				</form>
+			</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
 	 * Handle the form POST request from the frontend. Perform
 	 * basic validation to ease the service and gain faster feedback.
 	 */
@@ -306,12 +359,49 @@ class CalculatieTool {
 	}
 
 	/**
+	 * Handle the form POST request from the frontend. Perform
+	 * basic validation to ease the service and gain faster feedback. Then
+	 * send the form per mail.
+	 */
+	public static function process_mail_form() {
+		$first_name    = sanitize_text_field( $_POST["ctsignup_user_first"] );
+		$last_name     = sanitize_text_field( $_POST["ctsignup_user_last"] );
+		$email         = sanitize_email( $_POST["ctsignup_user_email"] );
+		$phone         = sanitize_text_field( $_POST["ctsignup_user_phone"] );
+		$redirect      = sanitize_text_field( $_POST["mail_redirect"] );
+
+		if ( ! $first_name || ! $last_name ) {
+			self::ctsignup_errors()->add('empty_names', __('Voor en achternaam zijn verplicht') );
+		}
+
+		if( ! $email ) {
+			self::ctsignup_errors()->add('empty_email', __('Email is verplicht') );
+		}
+
+		if( ! $phone ) {
+			self::ctsignup_errors()->add('empty_email', __('Telefoonnummer is verplicht') );
+		}
+
+		$mail_content = "New user: ";
+
+		if( empty( self::ctsignup_errors()->get_error_messages() ) ) {
+			if ( wp_mail( get_bloginfo( 'admin_email' ), 'Nieuwe', $mail_content ) ) {
+				wp_redirect( $redirect ); exit;
+			}
+		}
+	}
+
+	/**
 	 * Catch the incomming request, and send it to the
 	 * designated callback.
 	 */
 	public static function helper() {
 		if ( isset( $_POST['signup_form_save'] ) ) {
 			self::process_signup_form();
+		}
+
+		if ( isset( $_POST['mail_form_save'] ) ) {
+			self::process_mail_form();
 		}
 
 		if ( isset( $_GET['verify'] ) && is_admin() ) {
@@ -329,7 +419,7 @@ class CalculatieTool {
 	 * request the token via the client settings. The token
 	 * is stored in the application cache while it is valid.
 	 *
-	 * @return string Return the access token.
+	 * @return string Return the access token or false on failure.
 	 */
 	public static function get_access_token() {
 		$access_token = get_transient( 'ctsignup_access_token' );
