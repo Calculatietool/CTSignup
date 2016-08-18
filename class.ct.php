@@ -368,6 +368,7 @@ class CalculatieTool {
 		$last_name     = sanitize_text_field( $_POST["ctsignup_user_last"] );
 		$email         = sanitize_email( $_POST["ctsignup_user_email"] );
 		$phone         = sanitize_text_field( $_POST["ctsignup_user_phone"] );
+		$comment       = sanitize_text_field( $_POST["ctsignup_user_comment"] );
 		$redirect      = sanitize_text_field( $_POST["mail_redirect"] );
 
 		if ( ! $first_name || ! $last_name ) {
@@ -382,10 +383,15 @@ class CalculatieTool {
 			self::ctsignup_errors()->add('empty_email', __('Telefoonnummer is verplicht') );
 		}
 
-		$mail_content = "New user: ";
+		$mail_content  = "Aanvraag online demo<br />";
+		$mail_content .= "Gebruiker: " . $first_name . " " . $last_name . "<br />";
+		$mail_content .= "Email: " . $email . "<br />";
+		$mail_content .= "Telefoonnummer: " . $phone . "<br />";
+		$mail_content .= "Opmerking: " . $comment . "<br />";
+		$mail_content .= "Cheers, WordPress";
 
 		if( empty( self::ctsignup_errors()->get_error_messages() ) ) {
-			if ( wp_mail( get_bloginfo( 'admin_email' ), 'Nieuwe', $mail_content ) ) {
+			if ( wp_mail( get_bloginfo( 'admin_email' ), 'Aanvraag online demo', $mail_content ) ) {
 				wp_redirect( $redirect ); exit;
 			}
 		}
