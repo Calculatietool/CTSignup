@@ -215,54 +215,10 @@ class CalculatieTool {
 			$redirect = $attrs['success'];
 		}
 
-		ob_start(); ?>	
-			<?php CalculatieTool::signup_form_error_messages(); ?>
-	 
-			<div class="ctsignup_signup">
-				<form id="ctsignup_registration_form" class="ctsignup_form" action="" method="post">
-					<p>
-						<label for="ctsignup_user_first"><?php _e('Voornaam (verplicht)'); ?></label>
-						<input name="ctsignup_user_first" id="ctsignup_user_first" type="text" value="<?php isset($_POST["ctsignup_user_first"]) ? _e($_POST["ctsignup_user_first"]) : null ?>" data-validation="required"/>
-					</p>
-					<p>
-						<label for="ctsignup_user_last"><?php _e('Achternaam (verplicht)'); ?></label>
-						<input name="ctsignup_user_last" id="ctsignup_user_last" type="text" value="<?php isset($_POST["ctsignup_user_last"]) ? _e($_POST["ctsignup_user_last"]) : null ?>" data-validation="required"/>
-					</p>
-					<p>
-						<label for="ctsignup_user_phone"><?php _e('Telefoonnummer'); ?></label>
-						<input name="ctsignup_user_phone" id="ctsignup_user_phone" type="text" value="<?php isset($_POST["ctsignup_user_phone"]) ? _e($_POST["ctsignup_user_phone"]) : null ?>"/>
-					</p>
-					<p>
-						<label for="ctsignup_user_company"><?php _e('Bedrijfsnaam (verplicht)'); ?></label>
-						<input name="ctsignup_user_company" id="ctsignup_user_company" class="required" type="text" value="<?php isset($_POST["ctsignup_user_company"]) ? _e($_POST["ctsignup_user_company"]) : null ?>" data-validation="required"/>
-					</p>
-					<p>
-						<label for="ctsignup_user_account"><?php _e('Username (verplicht)'); ?></label>
-						<input name="ctsignup_user_account" id="ctsignup_user_account" class="required" type="text" value="<?php isset($_POST["ctsignup_user_account"]) ? _e($_POST["ctsignup_user_account"]) : null ?>" data-validation="alphanumeric" data-validation-allowing="-_" data-sanitize="trim lower"/>
-					</p>
-					<p>
-						<label for="ctsignup_user_email"><?php _e('Email (verplicht)'); ?></label>
-						<input name="ctsignup_user_email" id="ctsignup_user_email" class="required" type="email" value="<?php isset($_POST["ctsignup_user_email"]) ? _e($_POST["ctsignup_user_email"]) : null ?>" required data-validation="email"/>
-					</p>
-					<p>
-						<label for="password"><?php _e('Wachtwoord (verplicht)'); ?></label>
-						<input name="ctsignup_user_pass" id="password" class="required" type="password" data-validation="length" data-validation-length="min5"/>
-					</p>
-					<p>
-						<label for="password_again"><?php _e('Herhaal wachtwoord (verplicht)'); ?></label>
-						<input name="ctsignup_user_pass_confirm" id="password_again" class="required" type="password" data-validation="confirmation" data-validation-confirm="ctsignup_user_pass"/>
-					</p>
-					<p>
-						<label for="ctsignup_agreement"><?php _e('Ga akkoord met de algemene voorwaarde'); ?> *</label>
-						<input name="ctsignup_agreement" type="checkbox" data-validation="required">
-					</p>
-					<p>
-						<input type="hidden" name="signup_redirect" value="<?php _e( $redirect ) ?>"/>
-						<input type="submit" name="signup_form_save" value="<?php _e('Registreer account'); ?>"/>
-					</p>
-				</form>
-			</div>
-		<?php
+		ob_start();
+
+		require( CTSINGUP__INCLUDE_DIR . 'signup_form.include.php' );
+
 		return ob_get_clean();
 	}
 
@@ -278,38 +234,10 @@ class CalculatieTool {
 			$redirect = $attrs['success'];
 		}
 
-		ob_start(); ?>	
-			<?php CalculatieTool::signup_form_error_messages(); ?>
-	 
-			<div class="ctsignup_mail">
-				<form id="ctsignup_email_form" class="mail_form" action="" method="post">
-					<p>
-						<label for="ctsignup_user_first"><?php _e('Voornaam (verplicht)'); ?></label>
-						<input name="ctsignup_user_first" id="ctsignup_user_first" type="text" value="<?php isset($_POST["ctsignup_user_first"]) ? _e($_POST["ctsignup_user_first"]) : null ?>" data-validation="required"/>
-					</p>
-					<p>
-						<label for="ctsignup_user_last"><?php _e('Achternaam (verplicht)'); ?></label>
-						<input name="ctsignup_user_last" id="ctsignup_user_last" type="text" value="<?php isset($_POST["ctsignup_user_last"]) ? _e($_POST["ctsignup_user_last"]) : null ?>" data-validation="required"/>
-					</p>
-					<p>
-						<label for="ctsignup_user_email"><?php _e('Email (verplicht)'); ?></label>
-						<input name="ctsignup_user_email" id="ctsignup_user_email" class="required" type="email" value="<?php isset($_POST["ctsignup_user_email"]) ? _e($_POST["ctsignup_user_email"]) : null ?>" required data-validation="email"/>
-					</p>
-					<p>
-						<label for="ctsignup_user_phone"><?php _e('Telefoonnummer (verplicht)'); ?></label>
-						<input name="ctsignup_user_phone" id="ctsignup_user_phone" type="text" value="<?php isset($_POST["ctsignup_user_phone"]) ? _e($_POST["ctsignup_user_phone"]) : null ?>" data-validation="required"/>
-					</p>
-					<p>
-						<label for="ctsignup_user_comment"><?php _e('Opmerking'); ?></label>
-						<textarea name="ctsignup_user_comment" id="ctsignup_user_comment"><?php isset($_POST["ctsignup_user_comment"]) ? _e($_POST["ctsignup_user_comment"]) : null ?></textarea>
-					</p>
-					<p>
-						<input type="hidden" name="mail_redirect" value="<?php _e( $redirect ) ?>"/>
-						<input type="submit" name="mail_form_save" value="<?php _e('Versturen'); ?>"/>
-					</p>
-				</form>
-			</div>
-		<?php
+		ob_start();
+
+		require( CTSINGUP__INCLUDE_DIR . 'mail_form.include.php' );
+
 		return ob_get_clean();
 	}
 
@@ -327,19 +255,19 @@ class CalculatieTool {
 		$password2     = sanitize_text_field( $_POST["ctsignup_user_pass_confirm"] );
 		$redirect      = sanitize_text_field( $_POST["signup_redirect"] );
 
-		if ( !$first_name || !$last_name ) {
+		if ( ! $first_name || ! $last_name ) {
 			self::ctsignup_errors()->add('empty_names', __('Voor en achternaam zijn verplicht') );
 		}
 
-		if( !$account ) {
+		if( ! $account ) {
 			self::ctsignup_errors()->add('empty_account', __('Gebruikersnaam is verplicht') );
 		}
 
-		if( !$email ) {
+		if( ! $email ) {
 			self::ctsignup_errors()->add('empty_email', __('Email is verplicht') );
 		}
 
-		if( !$password || !$password2 ) {
+		if( ! $password || ! $password2 ) {
 			self::ctsignup_errors()->add('empty_password', __('Wachtwoord is verplicht') );
 		}
 
@@ -354,6 +282,8 @@ class CalculatieTool {
 		if( empty( self::ctsignup_errors()->get_error_messages() ) ) {
  			if ( CalculatieTool::api_external_signup( compact( 'first_name', 'last_name', 'company', 'account', 'email', 'password' ) ) ) {
 				wp_redirect( $redirect ); exit;
+			} else {
+				CalculatieTool::log( 'User was not created' );
 			}
 		}
 	}
@@ -393,6 +323,8 @@ class CalculatieTool {
 		if( empty( self::ctsignup_errors()->get_error_messages() ) ) {
 			if ( wp_mail( get_bloginfo( 'admin_email' ), 'Aanvraag online demo', $mail_content ) ) {
 				wp_redirect( $redirect ); exit;
+			} else {
+				CalculatieTool::log( 'Email was not send' );
 			}
 		}
 	}
@@ -439,8 +371,7 @@ class CalculatieTool {
 			);
 
 			$response = self::http_post( $body , self::get_token_url() );
-
-			if ( !$response ) {
+			if ( ! $response ) {
 				CalculatieTool::log( 'Service returned empty response' );
 				
 				return false;
@@ -475,6 +406,12 @@ class CalculatieTool {
 		if ( ! $response ) {
 			CalculatieTool::log( 'Service returned empty response' );
 			
+			return false;
+		}
+
+		if ( property_exists( $response, 'error' ) ) {
+			CalculatieTool::log( compact( 'response' ) );
+
 			return false;
 		}
 
