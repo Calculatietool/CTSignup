@@ -248,6 +248,7 @@ class CalculatieTool {
 	public static function process_signup_form() {
 		$first_name    = sanitize_text_field( $_POST["ctsignup_user_first"] );
 		$last_name     = sanitize_text_field( $_POST["ctsignup_user_last"] );
+		$phone         = sanitize_text_field( $_POST["ctsignup_user_phone"] );
 		$company       = sanitize_text_field( $_POST["ctsignup_user_company"] );
 		$account       = sanitize_text_field( $_POST["ctsignup_user_account"] );
 		$email         = sanitize_email( $_POST["ctsignup_user_email"] );
@@ -280,7 +281,7 @@ class CalculatieTool {
 		}
 
 		if( empty( self::ctsignup_errors()->get_error_messages() ) ) {
- 			if ( CalculatieTool::api_external_signup( compact( 'first_name', 'last_name', 'company', 'account', 'email', 'password' ) ) ) {
+ 			if ( CalculatieTool::api_external_signup( compact( 'first_name', 'last_name', 'phone', 'company', 'account', 'email', 'password' ) ) ) {
 				wp_redirect( $redirect ); exit;
 			} else {
 				CalculatieTool::log( 'User was not created' );
@@ -329,6 +330,22 @@ class CalculatieTool {
 		}
 	}
 
+	public static function process_usercheck() {
+		$name = sanitize_text_field( $_POST["ctsignup_user_account"] );
+
+		if ( ! preg_match( '/^[a-z0-9._-]+$/', $name) ) {
+			wp_send_json( array( 'valid' => false, 'message' => 'Gebruikersnaam mag alleen alfanumerieke en .- karakters bevatten' ) );
+		}
+
+		if ( self::api_external_username_check( compact( 'name' ) ) ) {
+			wp_send_json( array( 'valid' => false, 'message' => 'Gebruikersnaam bestaat al' ) );
+		} else {
+			wp_send_json( array( 'valid' => true ) );
+		}
+
+		exit;
+	}
+
 	/**
 	 * Catch the incomming request, and send it to the
 	 * designated callback.
@@ -340,6 +357,10 @@ class CalculatieTool {
 
 		if ( isset( $_POST['mail_form_save'] ) ) {
 			self::process_mail_form();
+		}
+
+		if ( isset( $_POST['ctsignup_user_account'] ) && isset( $_GET['usercheck'] ) ) {
+			self::process_usercheck();
 		}
 
 		if ( isset( $_GET['verify'] ) && is_admin() ) {
@@ -389,6 +410,41 @@ class CalculatieTool {
 		}
 
 		return $access_token;
+	}
+
+	/**
+	 * Verify the connection, keys and service.
+	 *
+	 * @return bool True on success, false on failure.
+	 */
+	public static function api_external_username_check( $data ) {
+		$access_token = self::get_access_token();
+		if ( ! $access_token ) {
+			return false;
+		}
+
+		$response = self::http_post( $data, self::build_api_url( '/oauth2/rest/internal/usernamecheck' ), $access_token );
+		if ( ! $response ) {
+			CalculatieTool::log( 'Service returned empty response' );
+			
+			return false;
+		}
+
+		if ( property_exists( $response, 'error' ) ) {
+			CalculatieTool::log( compact( 'response' ) );
+
+			return false;
+		}
+
+		if ( 0 === $response->success ) {
+			return false;
+		}
+
+		if ( 1 == $response->exist ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**

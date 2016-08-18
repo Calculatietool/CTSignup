@@ -20,7 +20,7 @@
 		</p>
 		<p>
 			<label for="ctsignup_user_account"><?php _e('Username (verplicht)'); ?></label>
-			<input name="ctsignup_user_account" id="ctsignup_user_account" class="required" type="text" value="<?php isset($_POST["ctsignup_user_account"]) ? _e($_POST["ctsignup_user_account"]) : null ?>" data-validation="alphanumeric" data-validation-allowing="-_" data-sanitize="trim lower"/>
+			<input name="ctsignup_user_account" id="ctsignup_user_account" class="required" type="text" value="<?php isset($_POST["ctsignup_user_account"]) ? _e($_POST["ctsignup_user_account"]) : null ?>" data-sanitize="trim lower" data-validation="server" data-validation-url="<?php _e(add_query_arg( 'usercheck', true )); ?>"/>
 		</p>
 		<p>
 			<label for="ctsignup_user_email"><?php _e('Email (verplicht)'); ?></label>
