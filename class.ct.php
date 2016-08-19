@@ -101,7 +101,7 @@ class CalculatieTool {
 	 * @return string The client id.
 	 */
 	public static function get_client_id() {
-		return defined('CTSIGNUP_CLIENT_ID') ? constant('CTSIGNUP_CLIENT_ID') : get_option('client_id');
+		return defined( 'CTSIGNUP_CLIENT_ID' ) ? constant( 'CTSIGNUP_CLIENT_ID' ) : get_option( 'client_id' );
 	}
 
 	/**
@@ -111,7 +111,7 @@ class CalculatieTool {
 	 * @return string The client secret.
 	 */
 	public static function get_client_secret() {
-		return defined('CTSIGNUP_CLIENT_SECRET') ? constant('CTSIGNUP_CLIENT_SECRET') : get_option('client_secret');
+		return defined( 'CTSIGNUP_CLIENT_SECRET' ) ? constant( 'CTSIGNUP_CLIENT_SECRET' ) : get_option( 'client_secret' );
 	}
 
 	/**
@@ -185,7 +185,7 @@ class CalculatieTool {
 	 */
 	public static function ctsignup_errors() {
     	static $wp_error;
-    	return isset($wp_error) ? $wp_error : ($wp_error = new WP_Error( null, null, null ) );
+    	return isset( $wp_error ) ? $wp_error : ($wp_error = new WP_Error( null, null, null ) );
 	}
 
 	/**
@@ -404,7 +404,12 @@ class CalculatieTool {
 				return false;
 			}
 
-			set_transient( 'ctsignup_access_token', $response->access_token, $response->expires_in );
+			$expiration = $response->expires_in;
+			if ( $expiration > 150 ) {
+				$expiration -= 100;
+			}
+			
+			set_transient( 'ctsignup_access_token', $response->access_token, $expiration );
 
 			$access_token = $response->access_token;
 		}
