@@ -61,20 +61,51 @@ class CalculatieTool {
 			    <?php do_settings_sections( 'ctsignup-settings-group' ); ?>
 			    <table class="form-table">
 			        <tr valign="top">
-			        <th scope="row">Client ID</th>
-			        <td><input type="text" name="client_id" value="<?php echo esc_attr( get_option( 'client_id') ); ?>" /></td>
+			        	<th scope="row">Callback</th>
+			        	<td><?php _e( get_site_url() ); ?></td>
+			        </tr>
+
+			        <tr valign="top">
+			        	<th scope="row">Client ID</th>
+			        	<td><input type="text" name="client_id" value="<?php _e( esc_attr( get_option( 'client_id') ) ); ?>" /></td>
 			        </tr>
 			         
 			        <tr valign="top">
-			        <th scope="row">Client secret</th>
-			        <td><input type="password" name="client_secret" value="<?php echo esc_attr( get_option( 'client_secret' ) ); ?>" /></td>
+			        	<th scope="row">Client secret</th>
+			        	<td><input type="password" name="client_secret" value="<?php _e( esc_attr( get_option( 'client_secret' ) ) ); ?>" /></td>
 			        </tr>
+					
+					<tr valign="top">
+						<th scope="row">
+							<?php _e( 'Shortcode' ); ?>
+						</th>
+						<td>
+							<div>
+								<strong>[ctsignup-form-signup success="<em>{pagina}</em>" id="{id}"]</strong>
+							</div>
+							<div>
+								<p class="description"><?php _e( 'Gebruik deze shortcode voor de registratiepagina' ); ?></p>
+							</div>
+						</td>
+					</tr>
+
+					<tr valign="top">
+						<th scope="row"></th>
+						<td>
+							<div>
+								<strong>[ctsignup-form-mail success="<em>{pagina}</em>" id="{id}"]</strong>
+							</div>
+							<div>
+								<p class="description"><?php _e( 'Gebruik deze shortcode voor de contactpagina' ); ?></p>
+							</div>
+						</td>
+					</tr>
 			    </table>
-			    <?php submit_button(); ?>
+				<p class="submit">
+					<input type="submit" class="button-primary" value="<?php _e( 'Save Changes' ); ?>" />
+					<a href="<?php _e( add_query_arg( 'verify', true ) ); ?>" type="button" class="button-secondary"><?php _e( 'Test Configuratie' ); ?><a/>
+				</p>
 			</form>
-			
-			<h2>Verify settings</h2>
-			<a href="<?php _e(add_query_arg( 'verify', true )); ?>" class="button button-primary">Verify</a>
 			</div>
 		<?php
 	}
@@ -90,6 +121,8 @@ class CalculatieTool {
 			add_settings_error( 'ctsignup-settings-keylength', esc_attr( 'settings-update' ), 'Invalid key provided' );
 			return;
 		}
+
+		delete_transient( 'ctsignup_access_token' );
 
 		return $input;
 	}
@@ -162,7 +195,7 @@ class CalculatieTool {
 	public static function ctsignup_admin_verify_ok() {
 	    ?>
 	    <div class="updated notice">
-	        <p><?php _e( 'Connection succeeded, keys are verified.' ); ?></p>
+	        <p><?php _e( '<strong>Verbinding gelukt</strong>' ); ?></p>
 	    </div>
 	    <?php
 	}
@@ -173,7 +206,7 @@ class CalculatieTool {
 	public static function ctsignup_admin_verify_error() {
 	    ?>
 	    <div class="error notice">
-	        <p><?php _e( 'Connection failed, check the keys.' ); ?></p>
+	        <p><?php _e( '<strong>Verbinding mislukt</strong>, controlleer de instellingen' ); ?></p>
 	    </div>
 	    <?php
 	}
@@ -215,6 +248,10 @@ class CalculatieTool {
 			$redirect = $attrs['success'];
 		}
 
+		if ( isset( $attrs['id'] ) ) {
+			$id = $attrs['id'];
+		}
+
 		ob_start();
 
 		require( CTSINGUP__INCLUDE_DIR . 'signup_form.include.php' );
@@ -232,6 +269,10 @@ class CalculatieTool {
 		$redirect = "/";
 		if ( isset( $attrs['success'] ) ) {
 			$redirect = $attrs['success'];
+		}
+
+		if ( isset( $attrs['id'] ) ) {
+			$id = $attrs['id'];
 		}
 
 		ob_start();
@@ -282,6 +323,16 @@ class CalculatieTool {
 
 		if( empty( self::ctsignup_errors()->get_error_messages() ) ) {
  			if ( CalculatieTool::api_external_signup( compact( 'first_name', 'last_name', 'phone', 'company', 'account', 'email', 'password' ) ) ) {
+
+				$mail_content  = "Nieuwe gebruiker via CTSignup<br />";
+				$mail_content .= "Gebruiker: " . $first_name . " " . $last_name . "<br />";
+				$mail_content .= "Email: " . $email . "<br />";
+				$mail_content .= "Bedrijf: " . $company . "<br />";
+				$mail_content .= "Telefoonnummer: " . $phone . "<br />";
+				$mail_content .= "Cheers, WordPress";
+
+				@wp_mail( get_bloginfo( 'admin_email' ), 'Nieuwe gebruiker via CTSignup', $mail_content );
+
 				wp_redirect( $redirect ); exit;
 			} else {
 				CalculatieTool::log( 'User was not created' );
@@ -365,6 +416,8 @@ class CalculatieTool {
 
 		if ( isset( $_GET['verify'] ) && is_admin() ) {
 
+			delete_transient( 'ctsignup_access_token' );
+
 			if ( self::api_external_verification() ) {
 				add_action( 'admin_notices',  array( 'CalculatieTool', 'ctsignup_admin_verify_ok') );
 			} else {
@@ -418,9 +471,9 @@ class CalculatieTool {
 	}
 
 	/**
-	 * Verify the connection, keys and service.
+	 * Check if the username exists.
 	 *
-	 * @return bool True on success, false on failure.
+	 * @return bool True on existing username, false otherwise.
 	 */
 	public static function api_external_username_check( $data ) {
 		$access_token = self::get_access_token();

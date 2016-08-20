@@ -1,6 +1,6 @@
 <?php CalculatieTool::signup_form_error_messages(); ?>
 
-<div class="ctsignup_mail">
+<div class="ctsignup_mail" <?php isset($id) ? _e('id="' . $id . '"') : null ?> >
 	<form id="ctsignup_email_form" class="mail_form" action="" method="post">
 		<p>
 			<label for="ctsignup_user_first"><?php _e('Voornaam (verplicht)'); ?></label>

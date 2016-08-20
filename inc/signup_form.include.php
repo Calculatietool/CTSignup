@@ -1,6 +1,6 @@
 <?php CalculatieTool::signup_form_error_messages(); ?>
 
-<div class="ctsignup_signup">
+<div class="ctsignup_signup" <?php isset($id) ? _e('id="' . $id . '"') : null ?> >
 	<form id="ctsignup_registration_form" class="ctsignup_form" action="" method="post">
 		<p>
 			<label for="ctsignup_user_first"><?php _e('Voornaam (verplicht)'); ?></label>
@@ -9,6 +9,10 @@
 		<p>
 			<label for="ctsignup_user_last"><?php _e('Achternaam (verplicht)'); ?></label>
 			<input name="ctsignup_user_last" id="ctsignup_user_last" type="text" value="<?php isset($_POST["ctsignup_user_last"]) ? _e($_POST["ctsignup_user_last"]) : null ?>" data-validation="required"/>
+		</p>
+		<p>
+			<label for="ctsignup_user_email"><?php _e('Email (verplicht)'); ?></label>
+			<input name="ctsignup_user_email" id="ctsignup_user_email" class="required" type="email" value="<?php isset($_POST["ctsignup_user_email"]) ? _e($_POST["ctsignup_user_email"]) : null ?>" required data-validation="email"/>
 		</p>
 		<p>
 			<label for="ctsignup_user_phone"><?php _e('Telefoonnummer'); ?></label>
@@ -21,10 +25,6 @@
 		<p>
 			<label for="ctsignup_user_account"><?php _e('Gebruikersnaam (verplicht)'); ?></label>
 			<input name="ctsignup_user_account" id="ctsignup_user_account" class="required" type="text" value="<?php isset($_POST["ctsignup_user_account"]) ? _e($_POST["ctsignup_user_account"]) : null ?>" data-sanitize="trim lower" data-validation="server" data-validation-url="<?php _e(add_query_arg( 'usercheck', true )); ?>"/>
-		</p>
-		<p>
-			<label for="ctsignup_user_email"><?php _e('Email (verplicht)'); ?></label>
-			<input name="ctsignup_user_email" id="ctsignup_user_email" class="required" type="email" value="<?php isset($_POST["ctsignup_user_email"]) ? _e($_POST["ctsignup_user_email"]) : null ?>" required data-validation="email"/>
 		</p>
 		<p>
 			<label for="password"><?php _e('Wachtwoord (verplicht)'); ?></label>
