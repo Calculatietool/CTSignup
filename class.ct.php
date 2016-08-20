@@ -81,7 +81,7 @@ class CalculatieTool {
 						</th>
 						<td>
 							<div>
-								<strong>[ctsignup-form-signup success="<em>{pagina}</em>" id="{id}"]</strong>
+								<strong>[ctsignup-form-signup success="<em>{pagina}</em>" id="<em>{id}</em>"]</strong>
 							</div>
 							<div>
 								<p class="description"><?php _e( 'Gebruik deze shortcode voor de registratiepagina' ); ?></p>
@@ -93,7 +93,7 @@ class CalculatieTool {
 						<th scope="row"></th>
 						<td>
 							<div>
-								<strong>[ctsignup-form-mail success="<em>{pagina}</em>" id="{id}"]</strong>
+								<strong>[ctsignup-form-mail success="<em>{pagina}</em>" id="<em>{id}</em>"]</strong>
 							</div>
 							<div>
 								<p class="description"><?php _e( 'Gebruik deze shortcode voor de contactpagina' ); ?></p>
