@@ -27,6 +27,9 @@ class CalculatieTool {
 
 		add_action('wp_footer', array( 'CalculatieTool', 'jq_validator' ) );
 
+		add_filter( 'wp_mail_from', array( 'CalculatieTool', 'wp_mail_from' ) );
+		add_filter( 'wp_mail_from_name', array( 'CalculatieTool', 'wp_mail_from_name' ) );
+
 		if ( is_admin() ) {
 			add_action( 'admin_init', array( 'CalculatieTool', 'admin_init' ) );
 			add_action( 'admin_menu', array( 'CalculatieTool', 'admin_menu' ) );
@@ -46,6 +49,24 @@ class CalculatieTool {
 	 */
 	public static function admin_menu() {
 		add_options_page( __('CTSignup', 'ctsignup'), __('CTSignup', 'ctsignup'), 'manage_options', 'ctsignup-config', array( 'CalculatieTool', 'load_options_page' ) );
+	}
+
+	/**
+	 * Sender address.
+	 *
+	 * @return string Sender address.
+	 */
+	public static function wp_mail_from( $content_type ) {
+		return 'info@calculatietool.com';
+	}
+
+	/**
+	 * Sender name.
+	 *
+	 * @return string Sender name.
+	 */
+	public static function wp_mail_from_name( $name ) {
+		return 'WPCTSignup';
 	}
 
 	/**
