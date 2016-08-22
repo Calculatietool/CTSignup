@@ -1,7 +1,7 @@
 <?php
 
 class CalculatieTool {
-	const API_ENDPOINT = 'http://localhost';
+	const API_ENDPOINT = 'http://app.calculatietool.com';
 
 	private static $initiated = false;
 
@@ -29,6 +29,7 @@ class CalculatieTool {
 
 		add_filter( 'wp_mail_from', array( 'CalculatieTool', 'wp_mail_from' ) );
 		add_filter( 'wp_mail_from_name', array( 'CalculatieTool', 'wp_mail_from_name' ) );
+		add_filter( 'wp_mail_content_type', 'wp_mail_content_type' );
 
 		if ( is_admin() ) {
 			add_action( 'admin_init', array( 'CalculatieTool', 'admin_init' ) );
@@ -67,6 +68,15 @@ class CalculatieTool {
 	 */
 	public static function wp_mail_from_name( $name ) {
 		return 'WPCTSignup';
+	}
+
+	/**
+	 * Mail content type.
+	 *
+	 * @return string Content type.
+	 */
+	function wp_mail_content_type( $content_type ) {
+		return 'text/html';
 	}
 
 	/**
