@@ -1,7 +1,7 @@
 <?php
 
 class CalculatieTool {
-	const API_ENDPOINT = 'http://app.calculatietool.com';
+	const API_ENDPOINT = 'https://app.calculatietool.com';
 
 	private static $initiated = false;
 
@@ -29,7 +29,6 @@ class CalculatieTool {
 
 		add_filter( 'wp_mail_from', array( 'CalculatieTool', 'wp_mail_from' ) );
 		add_filter( 'wp_mail_from_name', array( 'CalculatieTool', 'wp_mail_from_name' ) );
-		add_filter( 'wp_mail_content_type', 'wp_mail_content_type' );
 
 		if ( is_admin() ) {
 			add_action( 'admin_init', array( 'CalculatieTool', 'admin_init' ) );
@@ -68,15 +67,6 @@ class CalculatieTool {
 	 */
 	public static function wp_mail_from_name( $name ) {
 		return 'WPCTSignup';
-	}
-
-	/**
-	 * Mail content type.
-	 *
-	 * @return string Content type.
-	 */
-	function wp_mail_content_type( $content_type ) {
-		return 'text/html';
 	}
 
 	/**
@@ -355,11 +345,11 @@ class CalculatieTool {
 		if( empty( self::ctsignup_errors()->get_error_messages() ) ) {
  			if ( CalculatieTool::api_external_signup( compact( 'first_name', 'last_name', 'phone', 'company', 'account', 'email', 'password' ) ) ) {
 
-				$mail_content  = "Nieuwe gebruiker via CTSignup<br />";
-				$mail_content .= "Gebruiker: " . $first_name . " " . $last_name . "<br />";
-				$mail_content .= "Email: " . $email . "<br />";
-				$mail_content .= "Bedrijf: " . $company . "<br />";
-				$mail_content .= "Telefoonnummer: " . $phone . "<br />";
+				$mail_content  = "Nieuwe gebruiker via CTSignup\n";
+				$mail_content .= "Gebruiker: " . $first_name . " " . $last_name . "\n";
+				$mail_content .= "Email: " . $email . "\n";
+				$mail_content .= "Bedrijf: " . $company . "\n";
+				$mail_content .= "Telefoonnummer: " . $phone . "\n";
 				$mail_content .= "Cheers, WordPress";
 
 				@wp_mail( get_bloginfo( 'admin_email' ), 'Nieuwe gebruiker via CTSignup', $mail_content );
@@ -396,11 +386,11 @@ class CalculatieTool {
 			self::ctsignup_errors()->add('empty_email', __('Telefoonnummer is verplicht') );
 		}
 
-		$mail_content  = "Aanvraag online demo<br />";
-		$mail_content .= "Gebruiker: " . $first_name . " " . $last_name . "<br />";
-		$mail_content .= "Email: " . $email . "<br />";
-		$mail_content .= "Telefoonnummer: " . $phone . "<br />";
-		$mail_content .= "Opmerking: " . $comment . "<br />";
+		$mail_content  = "Aanvraag online demo\n";
+		$mail_content .= "Gebruiker: " . $first_name . " " . $last_name . "\n";
+		$mail_content .= "Email: " . $email . "\n";
+		$mail_content .= "Telefoonnummer: " . $phone . "\n";
+		$mail_content .= "Opmerking: " . $comment . "\n";
 		$mail_content .= "Cheers, WordPress";
 
 		if( empty( self::ctsignup_errors()->get_error_messages() ) ) {
