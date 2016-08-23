@@ -394,12 +394,12 @@ class CalculatieTool {
 		if( empty( self::ctsignup_errors()->get_error_messages() ) ) {
  			if ( CalculatieTool::api_external_signup( compact( 'first_name', 'last_name', 'phone', 'company', 'account', 'email', 'password' ) ) ) {
 
-				$mail_content  = "Nieuwe gebruiker via CTSignup\n";
+				$mail_content  = "Nieuwe gebruiker via CTSignup\n\n";
 				$mail_content .= "Gebruiker: " . $first_name . " " . $last_name . "\n";
 				$mail_content .= "Email: " . $email . "\n";
 				$mail_content .= "Bedrijf: " . $company . "\n";
 				$mail_content .= "Telefoonnummer: " . $phone . "\n";
-				$mail_content .= "Cheers, WordPress";
+				$mail_content .= "\nCheers, WordPress";
 
 				@wp_mail( get_bloginfo( 'admin_email' ), 'Nieuwe gebruiker via CTSignup', $mail_content );
 
@@ -435,12 +435,12 @@ class CalculatieTool {
 			self::ctsignup_errors()->add('empty_email', __('Telefoonnummer is verplicht') );
 		}
 
-		$mail_content  = "Aanvraag online demo\n";
+		$mail_content  = "Aanvraag online demo\n\n";
 		$mail_content .= "Gebruiker: " . $first_name . " " . $last_name . "\n";
 		$mail_content .= "Email: " . $email . "\n";
 		$mail_content .= "Telefoonnummer: " . $phone . "\n";
 		$mail_content .= "Opmerking: " . $comment . "\n";
-		$mail_content .= "Cheers, WordPress";
+		$mail_content .= "\nCheers, WordPress";
 
 		if( empty( self::ctsignup_errors()->get_error_messages() ) ) {
 			if ( wp_mail( get_bloginfo( 'admin_email' ), 'Aanvraag online demo', $mail_content ) ) {
@@ -495,10 +495,10 @@ class CalculatieTool {
 	 * system.
 	 */
 	private static function process_testmail() {
-		$mail_content  = "CTSignup testmail\n";
+		$mail_content  = "CTSignup testmail\n\n";
 		$mail_content .= "Dit is een testmail om te kijken of email vanuit\n";
 		$mail_content .= "WordPress goed aankomt en juist is geformateerd\n";
-		$mail_content .= "Cheers, WordPress";
+		$mail_content .= "\nCheers, WordPress";
 
 		if ( wp_mail( get_bloginfo( 'admin_email' ), 'CTSignup testmail', $mail_content ) ) {
 			add_action( 'admin_notices',  array( 'CalculatieTool', 'ctsignup_admin_mail_ok') );
