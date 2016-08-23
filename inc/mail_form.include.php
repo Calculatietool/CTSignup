@@ -3,7 +3,7 @@
 <div class="ctsignup_mail" <?php isset($id) ? _e('id="' . $id . '"') : null ?> >
 	<form id="ctsignup_mail_form" action="" method="post">
 		<p>
-			<label for="ctsignup_mail_first"><?php _e('Voornaam (verplicht)' . wp_get_referer() ) ; ?></label>
+			<label for="ctsignup_mail_first"><?php _e('Voornaam (verplicht)') ; ?></label>
 			<input name="ctsignup_mail_first" id="ctsignup_mail_first" type="text" value="<?php isset($_POST["ctsignup_mail_first"]) ? _e($_POST["ctsignup_mail_first"]) : null ?>" data-validation="required"/>
 		</p>
 		<p>
