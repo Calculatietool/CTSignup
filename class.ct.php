@@ -1,7 +1,7 @@
 <?php
 
 class CalculatieTool {
-	const API_ENDPOINT = 'https://app.calculatietool.com';
+	const API_ENDPOINT = 'https://app.calculatieTool.com';
 
 	private static $initiated = false;
 
@@ -20,7 +20,7 @@ class CalculatieTool {
 	private static function init_hooks() {
 		self::$initiated = true;
 
-		add_shortcode('ctsignup-form-signup', array( 'CalculatieTool', 'signup_form_register' ) );
+		add_shortcode('ctsignup-form-signup', array( 'CalculatieTool', 'signup_form_signup' ) );
 		add_shortcode('ctsignup-form-mail', array( 'CalculatieTool', 'signup_form_mail' ) );
 
 		wp_enqueue_script( 'script', plugins_url( '/js/jquery.form-validator.min.js', __FILE__ ), array ( 'jquery' ) );
@@ -33,6 +33,32 @@ class CalculatieTool {
 		if ( is_admin() ) {
 			add_action( 'admin_init', array( 'CalculatieTool', 'admin_init' ) );
 			add_action( 'admin_menu', array( 'CalculatieTool', 'admin_menu' ) );
+		}
+	}
+
+	/**
+	 * Remote user address.
+	 *
+	 * @return string Remote address or null.
+	 */
+	private static function get_remote_addr() {
+		if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
+			return $_SERVER['HTTP_CLIENT_IP'];
+		} else if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+			return $_SERVER['HTTP_X_FORWARDED_FOR'];
+		} else if ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+			return $_SERVER['REMOTE_ADDR'];
+		}
+	}
+
+	/**
+	 * HTTP referer is send by the browser.
+	 *
+	 * @return string HTTP referer or null.
+	 */
+	private static function get_referer() {
+		if ( ! empty( $_SERVER['HTTP_REFERER'] ) ) {
+			return $_SERVER['HTTP_REFERER'];
 		}
 	}
 
@@ -125,6 +151,7 @@ class CalculatieTool {
 				<p class="submit">
 					<input type="submit" class="button-primary" value="<?php _e( 'Save Changes' ); ?>" />
 					<a href="<?php _e( add_query_arg( 'verify', true ) ); ?>" type="button" class="button-secondary"><?php _e( 'Test Configuratie' ); ?><a/>
+					<a href="<?php _e( add_query_arg( 'testmail', true ) ); ?>" type="button" class="button-secondary"><?php _e( 'Test Mail' ); ?><a/>
 				</p>
 			</form>
 			</div>
@@ -154,7 +181,7 @@ class CalculatieTool {
 	 *
 	 * @return string The client id.
 	 */
-	public static function get_client_id() {
+	private static function get_client_id() {
 		return defined( 'CTSIGNUP_CLIENT_ID' ) ? constant( 'CTSIGNUP_CLIENT_ID' ) : get_option( 'client_id' );
 	}
 
@@ -164,7 +191,7 @@ class CalculatieTool {
 	 *
 	 * @return string The client secret.
 	 */
-	public static function get_client_secret() {
+	private static function get_client_secret() {
 		return defined( 'CTSIGNUP_CLIENT_SECRET' ) ? constant( 'CTSIGNUP_CLIENT_SECRET' ) : get_option( 'client_secret' );
 	}
 
@@ -173,7 +200,7 @@ class CalculatieTool {
 	 *
 	 * @return string The resulting URL.
 	 */
-	public static function get_token_url() {
+	private static function get_token_url() {
 		return self::API_ENDPOINT . '/oauth2/access_token';
 	}
 
@@ -183,7 +210,7 @@ class CalculatieTool {
 	 * @param string $uri Part of the URl specific for the request.
 	 * @return string The resulting URL.
 	 */
-	public static function build_api_url( $uri ) {
+	private static function build_api_url( $uri ) {
 		return self::API_ENDPOINT . $uri;
 	}
 
@@ -196,12 +223,12 @@ class CalculatieTool {
 		<script type='text/javascript'>
 		jQuery(document).ready(function() {
 			jQuery.validate({
-				form : '#ctsignup_registration_form',
+				form : '#ctsignup_signup_form',
 				lang: 'nl',
 				modules: [ 'security', 'sanitize' ]
 			});
 			jQuery.validate({
-				form : '#ctsignup_email_form',
+				form : '#ctsignup_mail_form',
 				lang: 'nl',
 				modules: [ 'sanitize' ]
 			});
@@ -228,6 +255,28 @@ class CalculatieTool {
 	    ?>
 	    <div class="error notice">
 	        <p><?php _e( '<strong>Verbinding mislukt</strong>, controlleer de instellingen' ); ?></p>
+	    </div>
+	    <?php
+	}
+
+	/**
+	 * Print the admin verification success banner.
+	 */
+	public static function ctsignup_admin_mail_ok() {
+	    ?>
+	    <div class="updated notice">
+	        <p><?php _e( '<strong>Mail is verzonden naar ' . get_bloginfo( 'admin_email' ) . '</strong>' ); ?></p>
+	    </div>
+	    <?php
+	}
+
+	/**
+	 * Print the admin verification error banner.
+	 */
+	public static function ctsignup_admin_mail_error() {
+	    ?>
+	    <div class="error notice">
+	        <p><?php _e( '<strong>Mail niet verzonden</strong>, controlleer de instellingen' ); ?></p>
 	    </div>
 	    <?php
 	}
@@ -263,7 +312,7 @@ class CalculatieTool {
 	 * @param string|array $attrs Supplied shortcode attributes.
 	 * @return string The HTML page.
 	 */
-	public static function signup_form_register( $attrs ) {
+	public static function signup_form_signup( $attrs ) {
 		$redirect = "/";
 		if ( isset( $attrs['success'] ) ) {
 			$redirect = $attrs['success'];
@@ -307,16 +356,16 @@ class CalculatieTool {
 	 * Handle the form POST request from the frontend. Perform
 	 * basic validation to ease the service and gain faster feedback.
 	 */
-	public static function process_signup_form() {
-		$first_name    = sanitize_text_field( $_POST["ctsignup_user_first"] );
-		$last_name     = sanitize_text_field( $_POST["ctsignup_user_last"] );
-		$phone         = sanitize_text_field( $_POST["ctsignup_user_phone"] );
-		$company       = sanitize_text_field( $_POST["ctsignup_user_company"] );
-		$account       = sanitize_text_field( $_POST["ctsignup_user_account"] );
-		$email         = sanitize_email( $_POST["ctsignup_user_email"] );
-		$password      = sanitize_text_field( $_POST["ctsignup_user_pass"] );
-		$password2     = sanitize_text_field( $_POST["ctsignup_user_pass_confirm"] );
-		$redirect      = sanitize_text_field( $_POST["signup_redirect"] );
+	private static function process_signup_form() {
+		$first_name    = sanitize_text_field( $_POST["ctsignup_signup_first"] );
+		$last_name     = sanitize_text_field( $_POST["ctsignup_signup_last"] );
+		$phone         = sanitize_text_field( $_POST["ctsignup_signup_phone"] );
+		$company       = sanitize_text_field( $_POST["ctsignup_signup_company"] );
+		$account       = sanitize_text_field( $_POST["ctsignup_signup_account"] );
+		$email         = sanitize_email( $_POST["ctsignup_signup_email"] );
+		$password      = sanitize_text_field( $_POST["ctsignup_signup_pass"] );
+		$password2     = sanitize_text_field( $_POST["ctsignup_signup_pass_confirm"] );
+		$redirect      = sanitize_text_field( $_POST["ctsignup_signup_form_redirect"] );
 
 		if ( ! $first_name || ! $last_name ) {
 			self::ctsignup_errors()->add('empty_names', __('Voor en achternaam zijn verplicht') );
@@ -366,13 +415,13 @@ class CalculatieTool {
 	 * basic validation to ease the service and gain faster feedback. Then
 	 * send the form per mail.
 	 */
-	public static function process_mail_form() {
-		$first_name    = sanitize_text_field( $_POST["ctsignup_user_first"] );
-		$last_name     = sanitize_text_field( $_POST["ctsignup_user_last"] );
-		$email         = sanitize_email( $_POST["ctsignup_user_email"] );
-		$phone         = sanitize_text_field( $_POST["ctsignup_user_phone"] );
-		$comment       = sanitize_text_field( $_POST["ctsignup_user_comment"] );
-		$redirect      = sanitize_text_field( $_POST["mail_redirect"] );
+	private static function process_mail_form() {
+		$first_name    = sanitize_text_field( $_POST["ctsignup_mail_first"] );
+		$last_name     = sanitize_text_field( $_POST["ctsignup_mail_last"] );
+		$email         = sanitize_email( $_POST["ctsignup_mail_email"] );
+		$phone         = sanitize_text_field( $_POST["ctsignup_mail_phone"] );
+		$comment       = sanitize_text_field( $_POST["ctsignup_mail_comment"] );
+		$redirect      = sanitize_text_field( $_POST["ctsignup_mail_form_redirect"] );
 
 		if ( ! $first_name || ! $last_name ) {
 			self::ctsignup_errors()->add('empty_names', __('Voor en achternaam zijn verplicht') );
@@ -402,10 +451,18 @@ class CalculatieTool {
 		}
 	}
 
-	public static function process_usercheck() {
-		$name = sanitize_text_field( $_POST["ctsignup_user_account"] );
+	/**
+	 * Check with the service if the username exists
+	 * and return the formatted message.
+	 */
+	private static function process_usercheck() {
+		$name = sanitize_text_field( $_POST["ctsignup_signup_account"] );
 
-		if ( ! preg_match( '/^[a-z0-9._-]+$/', $name) ) {
+		if ( ! $name ) {
+			wp_send_json( array( 'valid' => false, 'message' => 'Gebruikersnaam mag alleen alfanumerieke en .- karakters bevatten' ) );
+		}
+
+		if ( ! preg_match( '/^[a-z0-9._-]+$/', $name ) ) {
 			wp_send_json( array( 'valid' => false, 'message' => 'Gebruikersnaam mag alleen alfanumerieke en .- karakters bevatten' ) );
 		}
 
@@ -419,31 +476,60 @@ class CalculatieTool {
 	}
 
 	/**
+	 * Verify that the connection, keys and response 
+	 * are correct. Show the appropriate message on 
+	 * return.
+	 */
+	private static function process_verify() {
+		delete_transient( 'ctsignup_access_token' );
+
+		if ( self::api_external_verification() ) {
+			add_action( 'admin_notices',  array( 'CalculatieTool', 'ctsignup_admin_verify_ok') );
+		} else {
+			add_action( 'admin_notices',  array( 'CalculatieTool', 'ctsignup_admin_verify_error') );
+		}
+	}
+
+	/**
+	 * Send an testmail to test the wp_mail()
+	 * system.
+	 */
+	private static function process_testmail() {
+		$mail_content  = "CTSignup testmail\n";
+		$mail_content .= "Dit is een testmail om te kijken of email vanuit\n";
+		$mail_content .= "WordPress goed aankomt en juist is geformateerd\n";
+		$mail_content .= "Cheers, WordPress";
+
+		if ( wp_mail( get_bloginfo( 'admin_email' ), 'CTSignup testmail', $mail_content ) ) {
+			add_action( 'admin_notices',  array( 'CalculatieTool', 'ctsignup_admin_mail_ok') );
+		} else {
+			add_action( 'admin_notices',  array( 'CalculatieTool', 'ctsignup_admin_mail_error') );
+		}
+	}
+
+	/**
 	 * Catch the incomming request, and send it to the
 	 * designated callback.
 	 */
 	public static function helper() {
-		if ( isset( $_POST['signup_form_save'] ) ) {
+		if ( isset( $_POST['ctsignup_signup_form_save'] ) ) {
 			self::process_signup_form();
 		}
 
-		if ( isset( $_POST['mail_form_save'] ) ) {
+		if ( isset( $_POST['ctsignup_mail_form_save'] ) ) {
 			self::process_mail_form();
 		}
 
-		if ( isset( $_POST['ctsignup_user_account'] ) && isset( $_GET['usercheck'] ) ) {
+		if ( isset( $_POST['ctsignup_signup_account'] ) && isset( $_GET['usercheck'] ) ) {
 			self::process_usercheck();
 		}
 
 		if ( isset( $_GET['verify'] ) && is_admin() ) {
+			self::process_verify();
+		}
 
-			delete_transient( 'ctsignup_access_token' );
-
-			if ( self::api_external_verification() ) {
-				add_action( 'admin_notices',  array( 'CalculatieTool', 'ctsignup_admin_verify_ok') );
-			} else {
-				add_action( 'admin_notices',  array( 'CalculatieTool', 'ctsignup_admin_verify_error') );
-			}	
+		if ( isset( $_GET['testmail'] ) && is_admin() ) {
+			self::process_testmail();
 		}
 	}
 
@@ -454,7 +540,7 @@ class CalculatieTool {
 	 *
 	 * @return string Return the access token or false on failure.
 	 */
-	public static function get_access_token() {
+	private static function get_access_token() {
 		$access_token = get_transient( 'ctsignup_access_token' );
 
 		if( false === $access_token ) {
@@ -496,7 +582,7 @@ class CalculatieTool {
 	 *
 	 * @return bool True on existing username, false otherwise.
 	 */
-	public static function api_external_username_check( $data ) {
+	private static function api_external_username_check( $data ) {
 		$access_token = self::get_access_token();
 		if ( ! $access_token ) {
 			return false;
@@ -531,7 +617,7 @@ class CalculatieTool {
 	 *
 	 * @return bool True on success, false on failure.
 	 */
-	public static function api_external_verification() {
+	private static function api_external_verification() {
 		$access_token = self::get_access_token();
 		if ( ! $access_token ) {
 			return false;
@@ -563,11 +649,14 @@ class CalculatieTool {
 	 * @param array $data User data.
 	 * @return bool True on success, false on failure.
 	 */
-	public static function api_external_signup( $data ) {
+	private static function api_external_signup( $data ) {
 		$access_token = self::get_access_token();
 		if ( ! $access_token ) {
 			return false;
 		}
+
+		$data['remote_addr'] = self::get_remote_addr();
+		$data['http_referer'] = self::get_referer();
 
 		$response = self::http_post( $data, self::build_api_url( '/oauth2/rest/internal/user_signup' ), $access_token );
 		if ( ! $response ) {
@@ -612,7 +701,7 @@ class CalculatieTool {
 	 * @param string $token Access token to identify the client.
 	 * @return object Resulting object, empty on failure.
 	 */
-	public static function http_post( $request, $url, $token = null ) {
+	private static function http_post( $request, $url, $token = null ) {
 		$request_ua = sprintf( 'WordPress/%s | CTSignup/%s', $GLOBALS['wp_version'], constant( 'CTSINGUP_VERSION' ) );
 
 		$http_args = array(
@@ -646,7 +735,7 @@ class CalculatieTool {
 	 * @param string $token Access token to identify the client.
 	 * @return object Resulting object, empty on failure.
 	 */
-	public static function http_get( $url, $token = null ) {
+	private static function http_get( $url, $token = null ) {
 		$request_ua = sprintf( 'WordPress/%s | CTSignup/%s', $GLOBALS['wp_version'], constant( 'CTSINGUP_VERSION' ) );
 
 		$http_args = array(
