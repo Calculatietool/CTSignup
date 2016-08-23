@@ -16,7 +16,7 @@
 		</p>
 		<p>
 			<label for="ctsignup_signup_phone"><?php _e('Telefoonnummer'); ?></label>
-			<input name="ctsignup_signup_phone" id="ctsignup_signup_phone" type="text" value="<?php isset($_POST["ctsignup_signup_phone"]) ? _e($_POST["ctsignup_signup_phone"]) : null ?>"/>
+			<input name="ctsignup_signup_phone" id="ctsignup_signup_phone" type="text" value="<?php isset($_POST["ctsignup_signup_phone"]) ? _e($_POST["ctsignup_signup_phone"]) : null ?>" data-validation="number" data-validation-length="max12" data-validation-optional="true"/>
 		</p>
 		<p>
 			<label for="ctsignup_signup_company"><?php _e('Bedrijfsnaam (verplicht)'); ?></label>
