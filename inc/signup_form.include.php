@@ -35,7 +35,7 @@
 			<input name="ctsignup_signup_pass_confirm" id="password_again" class="required" type="password" data-validation="confirmation" data-validation-confirm="ctsignup_signup_pass"/>
 		</p>
 		<p>
-			<label for="ctsignup_signup_agreement"><?php _e('Ga akkoord met de algemene voorwaarde'); ?> *</label>
+			<label for="ctsignup_signup_agreement"><?php _e('Ga akkoord met de algemene voorwaarden'); ?> *</label>
 			<input name="ctsignup_signup_agreement" type="checkbox" data-validation="required">
 		</p>
 		<p>
