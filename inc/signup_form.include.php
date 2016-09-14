@@ -1,6 +1,6 @@
 <?php CalculatieTool::signup_form_error_messages(); ?>
 
-<div class="ctsignup_signup" <?php isset($id) ? _e('id="' . $id . '"') : null ?> >
+<div class="ctsignup_signup" <?php isset( $id ) ? _e('id="' . $id . '"') : null ?> >
 	<form id="ctsignup_signup_form" action="" method="post">
 		<p>
 			<label for="ctsignup_signup_first"><?php _e('Voornaam (verplicht)'); ?></label>
@@ -39,6 +39,9 @@
 			<input name="ctsignup_signup_agreement" type="checkbox" data-validation="required">
 		</p>
 		<p>
+			<?php if ( isset( $tags ) ) { ?>
+			<input type="hidden" name="ctsignup_signup_form_tags" value="<?php _e( $tags ) ?>"/>
+			<?php } ?>
 			<input type="hidden" name="ctsignup_signup_form_redirect" value="<?php _e( $redirect ) ?>"/>
 			<input type="submit" name="ctsignup_signup_form_save" value="<?php _e('Registreer account'); ?>"/>
 		</p>

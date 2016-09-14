@@ -1,6 +1,6 @@
 <?php CalculatieTool::signup_form_error_messages(); ?>
 
-<div class="ctsignup_mail" <?php isset($id) ? _e('id="' . $id . '"') : null ?> >
+<div class="ctsignup_mail" <?php isset( $id ) ? _e('id="' . $id . '"') : null ?> >
 	<form id="ctsignup_mail_form" action="" method="post">
 		<p>
 			<label for="ctsignup_mail_first"><?php _e('Voornaam (verplicht)') ; ?></label>
@@ -20,9 +20,12 @@
 		</p>
 		<p>
 			<label for="ctsignup_mail_comment"><?php _e('Opmerking'); ?></label>
-			<textarea name="ctsignup_mail_comment" id="ctsignup_mail_comment" data-validation="required"><?php isset($_POST["ctsignup_mail_comment"]) ? _e($_POST["ctsignup_mail_comment"]) : null ?></textarea>
+			<textarea name="ctsignup_mail_comment" id="ctsignup_mail_comment"><?php isset($_POST["ctsignup_mail_comment"]) ? _e($_POST["ctsignup_mail_comment"]) : null ?></textarea>
 		</p>
 		<p>
+			<?php if ( isset( $tags ) ) { ?>
+			<input type="hidden" name="ctsignup_mail_form_tags" value="<?php _e( $tags ) ?>"/>
+			<?php } ?>
 			<input type="hidden" name="ctsignup_mail_form_redirect" value="<?php _e( $redirect ) ?>"/>
 			<input type="submit" name="ctsignup_mail_form_save" value="<?php _e('Versturen'); ?>"/>
 		</p>

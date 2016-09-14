@@ -128,7 +128,7 @@ class CalculatieTool {
 						</th>
 						<td>
 							<div>
-								<strong>[ctsignup-form-signup success="<em>{pagina}</em>" id="<em>{id}</em>"]</strong>
+								<strong>[ctsignup-form-signup success="<em>{pagina}</em>" tags="<em>{tag1,tag2}</em>" id="<em>{id}</em>"]</strong>
 							</div>
 							<div>
 								<p class="description"><?php _e( 'Gebruik deze shortcode voor de registratiepagina' ); ?></p>
@@ -140,7 +140,7 @@ class CalculatieTool {
 						<th scope="row"></th>
 						<td>
 							<div>
-								<strong>[ctsignup-form-mail success="<em>{pagina}</em>" id="<em>{id}</em>"]</strong>
+								<strong>[ctsignup-form-mail success="<em>{pagina}</em>" tags="<em>{tag1,tag2}</em>" id="<em>{id}</em>"]</strong>
 							</div>
 							<div>
 								<p class="description"><?php _e( 'Gebruik deze shortcode voor de contactpagina' ); ?></p>
@@ -265,7 +265,7 @@ class CalculatieTool {
 	public static function ctsignup_admin_mail_ok() {
 	    ?>
 	    <div class="updated notice">
-	        <p><?php _e( '<strong>Mail is verzonden naar ' . get_bloginfo( 'admin_email' ) . '</strong>' ); ?></p>
+	        <p><?php _e( '<strong>Mail verzonden aan ' . get_bloginfo( 'admin_email' ) . '</strong>' ); ?></p>
 	    </div>
 	    <?php
 	}
@@ -322,6 +322,10 @@ class CalculatieTool {
 			$id = $attrs['id'];
 		}
 
+		if ( isset( $attrs['tags'] ) ) {
+			$tags = $attrs['tags'];
+		}
+
 		ob_start();
 
 		require( CTSINGUP__INCLUDE_DIR . 'signup_form.include.php' );
@@ -345,6 +349,10 @@ class CalculatieTool {
 			$id = $attrs['id'];
 		}
 
+		if ( isset( $attrs['tags'] ) ) {
+			$tags = $attrs['tags'];
+		}
+
 		ob_start();
 
 		require( CTSINGUP__INCLUDE_DIR . 'mail_form.include.php' );
@@ -366,33 +374,38 @@ class CalculatieTool {
 		$password      = sanitize_text_field( $_POST["ctsignup_signup_pass"] );
 		$password2     = sanitize_text_field( $_POST["ctsignup_signup_pass_confirm"] );
 		$redirect      = sanitize_text_field( $_POST["ctsignup_signup_form_redirect"] );
+		$tags          = @sanitize_text_field( $_POST["ctsignup_signup_form_tags"] );
 
 		if ( ! $first_name || ! $last_name ) {
 			self::ctsignup_errors()->add('empty_names', __('Voor en achternaam zijn verplicht') );
 		}
 
-		if( ! $account ) {
+		if ( ! $account ) {
 			self::ctsignup_errors()->add('empty_account', __('Gebruikersnaam is verplicht') );
 		}
 
-		if( ! $email ) {
+		if ( ! $email ) {
 			self::ctsignup_errors()->add('empty_email', __('Email is verplicht') );
 		}
 
-		if( ! $password || ! $password2 ) {
+		if ( ! $password || ! $password2 ) {
 			self::ctsignup_errors()->add('empty_password', __('Wachtwoord is verplicht') );
 		}
 
-		if( strlen( $password ) < 5 ) {
+		if ( strlen( $password ) < 5 ) {
 			self::ctsignup_errors()->add('short_password', __('Wachtwoord moet minimaal 5 characters bevatten') );
 		}
 
-		if( $password != $password2 ) {
+		if ( $password != $password2 ) {
 			self::ctsignup_errors()->add('no_match_password', __('Wachtwoorden komen niet overeen') );
 		}
 
-		if( empty( self::ctsignup_errors()->get_error_messages() ) ) {
- 			if ( CalculatieTool::api_external_signup( compact( 'first_name', 'last_name', 'phone', 'company', 'account', 'email', 'password' ) ) ) {
+		if ( ! empty( $tags ) ) {
+			$tags = explode( ",", $tags );
+		}
+
+		if ( empty( self::ctsignup_errors()->get_error_messages() ) ) {
+ 			if ( CalculatieTool::api_external_signup( compact( 'first_name', 'last_name', 'phone', 'company', 'account', 'email', 'password', 'tags' ) ) ) {
 
 				$mail_content  = "Nieuwe gebruiker via CTSignup\n\n";
 				$mail_content .= "Gebruiker: " . $first_name . " " . $last_name . "\n";
@@ -422,16 +435,17 @@ class CalculatieTool {
 		$phone         = sanitize_text_field( $_POST["ctsignup_mail_phone"] );
 		$comment       = sanitize_text_field( $_POST["ctsignup_mail_comment"] );
 		$redirect      = sanitize_text_field( $_POST["ctsignup_mail_form_redirect"] );
+		$tags          = @sanitize_text_field( $_POST["ctsignup_mail_form_tags"] );
 
 		if ( ! $first_name || ! $last_name ) {
 			self::ctsignup_errors()->add('empty_names', __('Voor en achternaam zijn verplicht') );
 		}
 
-		if( ! $email ) {
+		if ( ! $email ) {
 			self::ctsignup_errors()->add('empty_email', __('Email is verplicht') );
 		}
 
-		if( ! $phone ) {
+		if ( ! $phone ) {
 			self::ctsignup_errors()->add('empty_email', __('Telefoonnummer is verplicht') );
 		}
 
@@ -439,10 +453,18 @@ class CalculatieTool {
 		$mail_content .= "Gebruiker: " . $first_name . " " . $last_name . "\n";
 		$mail_content .= "Email: " . $email . "\n";
 		$mail_content .= "Telefoonnummer: " . $phone . "\n";
-		$mail_content .= "Opmerking: " . $comment . "\n";
+
+		if ( ! empty( $comment ) ) {
+			$mail_content .= "Opmerking: " . $comment . "\n";
+		}
+
+		if ( ! empty( $tags ) ) {
+			$mail_content .= "Tags: " . $tags . "\n";
+		}
+
 		$mail_content .= "\nCheers, WordPress";
 
-		if( empty( self::ctsignup_errors()->get_error_messages() ) ) {
+		if ( empty( self::ctsignup_errors()->get_error_messages() ) ) {
 			if ( wp_mail( get_bloginfo( 'admin_email' ), 'Aanvraag online demo', $mail_content ) ) {
 				wp_redirect( $redirect ); exit;
 			} else {
@@ -666,7 +688,9 @@ class CalculatieTool {
 		}
 
 		if ( property_exists( $response, 'error' ) ) {
-			print_r($response); exit;
+			CalculatieTool::log( compact( 'response' ) );
+
+			return false;
 		}
 
 		if ( 0 === $response->success ) {
