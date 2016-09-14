@@ -406,13 +406,12 @@ class CalculatieTool {
 
 		if ( empty( self::ctsignup_errors()->get_error_messages() ) ) {
  			if ( CalculatieTool::api_external_signup( compact( 'first_name', 'last_name', 'phone', 'company', 'account', 'email', 'password', 'tags' ) ) ) {
-
 				$mail_content  = "Nieuwe gebruiker via CTSignup\n\n";
 				$mail_content .= "Gebruiker: " . $first_name . " " . $last_name . "\n";
 				$mail_content .= "Email: " . $email . "\n";
 				$mail_content .= "Bedrijf: " . $company . "\n";
 				$mail_content .= "Telefoonnummer: " . $phone . "\n";
-				$mail_content .= "\nCheers, WordPress";
+				$mail_content .= "\nCheers,\nWordPress";
 
 				@wp_mail( get_bloginfo( 'admin_email' ), 'Nieuwe gebruiker via CTSignup', $mail_content );
 
